@@ -4,6 +4,7 @@ import sys
 import os.path
 import sqlite3
 import hashlib
+from math import sqrt
 
 def calc_game(game_array):
 	b = [' '] * 21
@@ -269,10 +270,11 @@ def create_mode():
 		c = conn.cursor()
 		try:
 			c.execute('''CREATE TABLE game_data (id INTEGER PRIMARY KEY, date TEXT, game_num INTEGER, game_str TEXT, frame1a TEXT, frame1b TEXT, frame2a TEXT, frame2b TEXT, frame3a TEXT, frame3b TEXT, frame4a TEXT, frame4b TEXT, frame5a TEXT, frame5b TEXT, frame6a TEXT, frame6b TEXT, frame7a TEXT, frame7b TEXT, frame8a TEXT, frame8b TEXT, frame9a TEXT, frame9b TEXT, frame10a TEXT, frame10b TEXT, frame10c TEXT, note1 TEXT, note2 TEXT, note3 TEXT, note4 TEXT, note5 TEXT, note6 TEXT, note7 TEXT, note8 TEXT, note9 TEXT, note10 TEXT, score1 INTEGER, score2 INTEGER, score3 INTEGER, score4 INTEGER, score5 INTEGER, score6 INTEGER, score7 INTEGER, score8 INTEGER, score9 INTEGER, score10 INTEGER, strikes INTEGER, spares INTEGER, opens INTEGER, splits INTEGER, splitConv INTEGER, firstBallAve REAL, hash TEXT)''')
+			c.execute('''CREATE TABLE summary (id INTEGER PRIMARY KEY, date TEXT, num_games INTEGER, average REAL, std_dev REAL, high_series INTEGER, ave_strikes REAL, ave_spares REAL, ave_opens REAL, ave_splits REAL, ave_splitConv REAL, firstBallAve REAL)''')
 			print "Creating the database"
 			conn.commit()
 		except sqlite3.OperationalError:
-			print "Database already exists"
+			print "game_data table already exists"
 
 	#create_mode_exit = False
 	## for now don't allow the user to change the name of the database
@@ -339,6 +341,8 @@ def import_mode(file_to_import):
 			if int(score) != rest_of_values[-7]:
 				print "check %s %s %s %s %s - %i" % (photo, date, num, game, score, rest_of_values[-7])
 
+			## double check the counts (X,/,S)
+
 			# determine the md5 hash
 			string_to_hash = "%s %s %s" % (date, num, game)
 			m = hashlib.md5()
@@ -359,6 +363,88 @@ def import_mode(file_to_import):
 		print "Imported %s - %i new, %i dupes" % (file_to_import, num_new, num_dupes)
 	else:
 		print "File does not exist"
+
+def update_summary():
+	print "updating summary"
+	data_date_list = []
+	summary_date_list = []
+	conn = sqlite3.connect('bowling.db')
+	c = conn.cursor()
+	c.execute('select distinct date from game_data')
+	for row in c:
+		data_date_list.append(row[0])
+	
+	c.execute('select distinct date from summary')
+	for row in c:
+		summary_date_list.append(row[0])
+	
+	print data_date_list
+	print summary_date_list
+
+	no_update_counter = 0
+	update_counter = 0
+
+	for date in data_date_list:
+		if date in summary_date_list:
+			print "doing nothing, %s already in summary" % date
+			no_update_counter += 1
+		else:
+			print "Adding %s to summary" % date
+			update_counter += 1
+
+			# initialize sums
+			score_sum = 0
+			strike_sum = 0
+			spare_sum = 0
+			open_sum = 0
+			split_sum = 0
+			splitconv_sum = 0
+			fba_sum = 0
+
+			num_games = 0
+			game_array = []
+			high_series = -1
+			std_dev = 0
+
+			# Select all games with date to do summary calculations
+			c.execute('select score10,strikes,spares,opens,splits,splitConv,firstBallAve from game_data where date=?', (date,))
+			for row in c:
+				print row
+				num_games += 1
+				game_array.append(row[0])
+				score_sum += row[0]
+				strike_sum += row[1]
+				spare_sum += row[2]
+				open_sum += row[3]
+				split_sum += row[4]
+				splitconv_sum += row[5]
+				fba_sum += row[6]
+			# calc averages
+			ave = 1.0 * score_sum / num_games
+			strike_ave = 1.0 * strike_sum / num_games
+			spare_ave = 1.0 * spare_sum / num_games
+			open_ave = 1.0 * open_sum / num_games
+			split_ave = 1.0 * split_sum / num_games
+			splitconv_ave = 1.0 * splitconv_sum / num_games
+			fba = fba_sum / num_games
+			# calc high series
+			if num_games > 2:
+				for i in range(len(game_array)-2):
+					temp = game_array[i:i+3]
+					hs = temp[0] + temp[1] + temp[2]
+					if hs > high_series:
+						high_series = hs
+			# calc std_dev
+			sum = 0
+			for game in game_array:
+				sum += (game - ave) * (game - ave) * 1.0
+			std_dev = sqrt(1.0 * sum / num_games)
+			
+			db_values = (None, date, num_games, ave, std_dev, high_series, strike_ave, spare_ave, open_ave, split_ave, splitconv_ave, fba)
+			c.execute('insert into summary values (?,?,?,?,?,?,?,?,?,?,?,?)', db_values)
+	# commit all the changes
+	conn.commit()
+
 
 def disp_selected(c):
 	print "  1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | Score X  /  O  S  S/  FBA"
@@ -450,6 +536,7 @@ def main():
 				import_mode(comm[1])
 			except IndexError:
 				print "Usage: import <file_to_import>"
+			update_summary()
 		if comm[0] == 'add':
 			print 'entering adding mode'
 			add_mode()
