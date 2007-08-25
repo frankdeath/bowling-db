@@ -297,6 +297,17 @@ def list_mode(min_score):
 	c = conn.cursor()
 	c.execute('select * from game_data where score10 >= ?', (min_score,))
 	disp_selected(c)
+
+def summary_mode(dummy):
+	conn = sqlite3.connect('bowling.db')
+	c = conn.cursor()
+	c.execute('select * from summary')
+	print "   i      date      #    Ave     dev   high    X    /    O    S    S/   FBA"
+	#		db_values = (None, date, num_games, ave, std_dev, high_series, strike_ave, spare_ave, open_ave, split_ave, splitconv_ave, fba)
+	for row in c:
+		print "%4i   %s  %2i   %.1f   %4.1f    %3i   %.1f  %.1f  %.1f  %.1f  %.1f   %.1f" % row
+
+
 		
 def import_mode(file_to_import):
 	if os.path.isfile(file_to_import):
@@ -531,6 +542,12 @@ def main():
 				list_mode(0)
 			else:
 				list_mode(int(comm[1]))
+		if comm[0] == 'summary':
+			if len(comm) != 2:
+				#print 'selecting all games'
+				summary_mode(0)
+			else:
+				summary_mode(int(comm[1]))
 		if comm[0] == 'import':
 			try:
 				import_mode(comm[1])
