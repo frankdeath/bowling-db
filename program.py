@@ -366,7 +366,26 @@ def import_mode(file_to_import):
 			if int(score) != rest_of_values[-7]:
 				print "check %s %s %s %s %s - %i" % (photo, date, num, game, score, rest_of_values[-7])
 
+			## db_entry = b + n + s + [strikes, spares, opens, splits, splits_converted, first_ball_ave]
 			## double check the counts (X,/,S)
+			c_str = game.count('X') + game.count('x')
+			c_spr = game.count('/')
+			#print rest_of_values[:21]
+			t_game = rest_of_values[:21]
+			c_opn = 0
+			for i in range(10):
+				if i != 9:
+					temp = t_game[2*i:2*i+2]
+				else:
+					temp = t_game[2*i:2*i+3]
+				if temp.count('X') == 0 and temp.count('x') == 0 and temp.count('/') == 0:
+					c_opn += 1
+			if c_str != rest_of_values[-6]:
+				print c_str, rest_of_values[-6]
+			if c_spr != rest_of_values[-5]:
+				print c_spr, rest_of_values[-5]
+			if c_opn != rest_of_values[-4]:
+				print c_opn, rest_of_values[-4]
 
 			# determine the md5 hash
 			string_to_hash = "%s %s %s" % (date, num, game)
@@ -403,18 +422,18 @@ def update_summary():
 	for row in c:
 		summary_date_list.append(row[0])
 	
-	print data_date_list
-	print summary_date_list
+	#print data_date_list
+	#print summary_date_list
 
 	no_update_counter = 0
 	update_counter = 0
 
 	for date in data_date_list:
 		if date in summary_date_list:
-			print "doing nothing, %s already in summary" % date
+			#print "doing nothing, %s already in summary" % date
 			no_update_counter += 1
 		else:
-			print "Adding %s to summary" % date
+			#print "Adding %s to summary" % date
 			update_counter += 1
 
 			# initialize sums
@@ -434,7 +453,7 @@ def update_summary():
 			# Select all games with date to do summary calculations
 			c.execute('select score10,strikes,spares,opens,splits,splitConv,firstBallAve from game_data where date=?', (date,))
 			for row in c:
-				print row
+				#print row
 				num_games += 1
 				game_array.append(row[0])
 				score_sum += row[0]
@@ -455,7 +474,7 @@ def update_summary():
 				splitconv_percent = 100.0 * splitconv_sum / split_sum
 			else:
 				splitconv_percent = 0.0
-			print "split_sum = %i; splitconv_sum = %i; splitconv_percent = %f" % (split_sum, splitconv_sum, splitconv_percent)
+			#print "split_sum = %i; splitconv_sum = %i; splitconv_percent = %f" % (split_sum, splitconv_sum, splitconv_percent)
 			fba = fba_sum / num_games
 			# calc high series
 			if num_games > 2:
