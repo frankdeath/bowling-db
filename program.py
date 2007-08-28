@@ -270,7 +270,7 @@ def create_mode():
 		c = conn.cursor()
 		try:
 			c.execute('''CREATE TABLE game_data (id INTEGER PRIMARY KEY, date TEXT, game_num INTEGER, game_str TEXT, frame1a TEXT, frame1b TEXT, frame2a TEXT, frame2b TEXT, frame3a TEXT, frame3b TEXT, frame4a TEXT, frame4b TEXT, frame5a TEXT, frame5b TEXT, frame6a TEXT, frame6b TEXT, frame7a TEXT, frame7b TEXT, frame8a TEXT, frame8b TEXT, frame9a TEXT, frame9b TEXT, frame10a TEXT, frame10b TEXT, frame10c TEXT, note1 TEXT, note2 TEXT, note3 TEXT, note4 TEXT, note5 TEXT, note6 TEXT, note7 TEXT, note8 TEXT, note9 TEXT, note10 TEXT, score1 INTEGER, score2 INTEGER, score3 INTEGER, score4 INTEGER, score5 INTEGER, score6 INTEGER, score7 INTEGER, score8 INTEGER, score9 INTEGER, score10 INTEGER, strikes INTEGER, spares INTEGER, opens INTEGER, splits INTEGER, splitConv INTEGER, firstBallAve REAL, hash TEXT)''')
-			c.execute('''CREATE TABLE summary (id INTEGER PRIMARY KEY, date TEXT, num_games INTEGER, average REAL, std_dev REAL, high_series INTEGER, ave_strikes REAL, ave_spares REAL, ave_opens REAL, ave_splits REAL, ave_splitConv REAL, firstBallAve REAL)''')
+			c.execute('''CREATE TABLE summary (id INTEGER PRIMARY KEY, date TEXT, num_games INTEGER, average REAL, std_dev REAL, high_game INTEGER, high_series INTEGER, ave_strikes REAL, ave_spares REAL, ave_opens REAL, ave_splits REAL, splitConv_percent REAL, firstBallAve REAL)''')
 			print "Creating the database"
 			conn.commit()
 		except sqlite3.OperationalError:
@@ -302,11 +302,10 @@ def summary_mode(dummy):
 	conn = sqlite3.connect('bowling.db')
 	c = conn.cursor()
 	c.execute('select * from summary')
-	print "   i      date      #    Ave     dev   high    X    /    O    S    S/   FBA"
-	#		db_values = (None, date, num_games, ave, std_dev, high_series, strike_ave, spare_ave, open_ave, split_ave, splitconv_ave, fba)
+	print "   i      date      #    Ave     dev   game  ser    X    /    O    S    S/%   FBA"
+	#		db_values = (None, date, num_games, ave, std_dev, high_game, high_series, strike_ave, spare_ave, open_ave, split_ave, splitconv_ave, fba)
 	for row in c:
-		print "%4i   %s  %2i   %.1f   %4.1f    %3i   %.1f  %.1f  %.1f  %.1f  %.1f   %.1f" % row
-
+		print "%4i   %s  %2i   %.1f   %4.1f    %3i  %3i   %.1f  %.1f  %.1f  %.1f  %4.1f   %.1f" % row
 
 		
 def import_mode(file_to_import):
@@ -436,7 +435,12 @@ def update_summary():
 			spare_ave = 1.0 * spare_sum / num_games
 			open_ave = 1.0 * open_sum / num_games
 			split_ave = 1.0 * split_sum / num_games
-			splitconv_ave = 1.0 * splitconv_sum / num_games
+			# calculate split conversion percentage
+			if split_sum > 0:
+				splitconv_percent = 100.0 * splitconv_sum / split_sum
+			else:
+				splitconv_percent = 0.0
+			print "split_sum = %i; splitconv_sum = %i; splitconv_percent = %f" % (split_sum, splitconv_sum, splitconv_percent)
 			fba = fba_sum / num_games
 			# calc high series
 			if num_games > 2:
@@ -450,15 +454,17 @@ def update_summary():
 			for game in game_array:
 				sum += (game - ave) * (game - ave) * 1.0
 			std_dev = sqrt(1.0 * sum / num_games)
+			# calc high game
+			high_game = max(game_array)
 			
-			db_values = (None, date, num_games, ave, std_dev, high_series, strike_ave, spare_ave, open_ave, split_ave, splitconv_ave, fba)
-			c.execute('insert into summary values (?,?,?,?,?,?,?,?,?,?,?,?)', db_values)
+			db_values = (None, date, num_games, ave, std_dev, high_game, high_series, strike_ave, spare_ave, open_ave, split_ave, splitconv_percent, fba)
+			c.execute('insert into summary values (?,?,?,?,?,?,?,?,?,?,?,?,?)', db_values)
 	# commit all the changes
 	conn.commit()
 
 
 def disp_selected(c):
-	print "  1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | Score X  /  O  S  S/  FBA"
+	print "   i     Date     #  | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | Score X  /  O  S  S/  FBA"
 	for row in c:
 		#print row
 		index = row[0]
@@ -492,6 +498,9 @@ def disp_selected(c):
 		g_a = list(ball_array)
 		#print "".join(g_a)
 
+		# index and date
+		disp_str0 = "%4i  %s %2i" % (index, date, game_num)
+
 		# Add the notes to the game_array list
 		a = range(10)
 		a.reverse()
@@ -508,7 +517,7 @@ def disp_selected(c):
 		#disp_str2 = "%4i %2i %2i %2i %2i %2i %5.1f  %s" % row[44:]
 		disp_str2 = "%4i %2i %2i %2i %2i %2i %5.1f" % row[44:-1]
 
-		print "%s  %s" % (disp_str1, disp_str2)
+		print "%s  %s  %s" % (disp_str0, disp_str1, disp_str2)
 
 def calc_mode():
 	exit = False
