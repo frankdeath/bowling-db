@@ -311,8 +311,16 @@ def summary_mode(days):
 		c.execute('SELECT * FROM (SELECT * FROM (SELECT * FROM summary ORDER BY id DESC) LIMIT ?) ORDER BY id ASC', (days,))
 	print "   i      date      #    Ave     dev   game  ser    X    /    O    S    S/%   FBA"
 	#		db_values = (None, date, num_games, ave, std_dev, high_game, high_series, strike_ave, spare_ave, open_ave, split_ave, splitconv_ave, fba)
+
+	num_games = 0
+	total_score = 0
+
 	for row in c:
 		print "%4i   %s  %2i   %.1f   %4.1f    %3i  %3i   %.1f  %.1f  %.1f  %.1f  %4.1f   %.1f" % row
+		num_games += row[2]
+		total_score += ( row[2] * row[3] )
+
+	print "  Average: %4.1f" % (1.0 * total_score / num_games)
 
 		
 def import_mode(file_to_import):
