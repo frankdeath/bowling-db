@@ -298,10 +298,17 @@ def list_mode(min_score):
 	c.execute('select * from game_data where score10 >= ?', (min_score,))
 	disp_selected(c)
 
-def summary_mode(dummy):
+def summary_mode(days):
 	conn = sqlite3.connect('bowling.db')
 	c = conn.cursor()
-	c.execute('select * from summary')
+	if days == 0:
+		##  select all in ascending order
+		c.execute('select * from summary')
+	else:
+		##  select last 10 in descending order
+		#c.execute('SELECT * FROM (SELECT * FROM summary ORDER BY id DESC) LIMIT 10')
+		##  select last 10 in ascending order
+		c.execute('SELECT * FROM (SELECT * FROM (SELECT * FROM summary ORDER BY id DESC) LIMIT ?) ORDER BY id ASC', (days,))
 	print "   i      date      #    Ave     dev   game  ser    X    /    O    S    S/%   FBA"
 	#		db_values = (None, date, num_games, ave, std_dev, high_game, high_series, strike_ave, spare_ave, open_ave, split_ave, splitconv_ave, fba)
 	for row in c:
@@ -554,7 +561,8 @@ def main():
 		if comm[0] == 'summary':
 			if len(comm) != 2:
 				#print 'selecting all games'
-				summary_mode(0)
+				#summary_mode(0)
+				summary_mode(10)
 			else:
 				summary_mode(int(comm[1]))
 		if comm[0] == 'import':
