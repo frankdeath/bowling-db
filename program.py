@@ -298,7 +298,7 @@ def list_mode(min_score):
 	c.execute('select * from game_data where score10 >= ?', (min_score,))
 	disp_selected(c)
 
-def summary_mode(days):
+def summary_mode(days, offset):
 	conn = sqlite3.connect('bowling.db')
 	c = conn.cursor()
 	if days == 0:
@@ -308,7 +308,10 @@ def summary_mode(days):
 		##  select last 10 in descending order
 		#c.execute('SELECT * FROM (SELECT * FROM summary ORDER BY id DESC) LIMIT 10')
 		##  select last 10 in ascending order
-		c.execute('SELECT * FROM (SELECT * FROM (SELECT * FROM summary ORDER BY id DESC) LIMIT ?) ORDER BY id ASC', (days,))
+		#c.execute('SELECT * FROM (SELECT * FROM (SELECT * FROM summary ORDER BY id DESC) LIMIT ?) ORDER BY id ASC', (days,))
+		#SELECT * FROM (SELECT * FROM (SELECT * FROM summary ORDER BY id DESC) LIMIT 14) ORDER BY id ASC LIMIT 10
+		#SELECT * FROM (SELECT * FROM summary ORDER BY id DESC LIMIT 14) ORDER BY id ASC LIMIT 10
+		c.execute('SELECT * FROM (SELECT * FROM summary ORDER BY id DESC LIMIT ?) ORDER BY id ASC LIMIT ?', (days+offset,days))
 	print "   i      date      #    Ave     dev   game  ser    X    /    O    S    S/%   FBA"
 	#		db_values = (None, date, num_games, ave, std_dev, high_game, high_series, strike_ave, spare_ave, open_ave, split_ave, splitconv_ave, fba)
 
@@ -586,12 +589,14 @@ def main():
 			else:
 				list_mode(int(comm[1]))
 		if comm[0] == 'summary':
-			if len(comm) != 2:
+			if len(comm) == 1:
 				#print 'selecting all games'
 				#summary_mode(0)
-				summary_mode(10)
+				summary_mode(10, 0)
+			elif len(comm) == 2:
+				summary_mode(int(comm[1]), 0)
 			else:
-				summary_mode(int(comm[1]))
+				summary_mode(int(comm[1]),int(comm[2]))
 		if comm[0] == 'import':
 			try:
 				import_mode(comm[1])
@@ -612,10 +617,11 @@ def main():
 			print '=======\t\t==========='
 			print 'Command\t\tDescription'
 			print '=======\t\t==========='
-			print 'create\t\tenter create mode'
+			#print 'create\t\tenter create mode'
 			print 'import\t\timport games from txt file'
-			print 'add\t\tenter add mode'
+			#print 'add\t\tenter add mode'
 			print 'list\t\tdisplay all games'
+			print 'summary\t\tdisplay all days'
 			print 'calc\t\tenter calc mode'
 			print 'help\t\tdisplay this message'
 			print
