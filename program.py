@@ -325,6 +325,14 @@ def summary_mode(days, offset):
 
 	print "  Average: %4.1f" % (1.0 * total_score / num_games)
 
+def day_mode(index):
+	conn = sqlite3.connect('bowling.db')
+	c = conn.cursor()
+	c.execute('select date from summary where id == ?', (index,))
+	for row in c:
+		date = row[0]
+	c.execute('select * from game_data where date == ?', (date,))
+	disp_selected(c)
 		
 def import_mode(file_to_import):
 	if os.path.isfile(file_to_import):
@@ -597,6 +605,11 @@ def main():
 				summary_mode(int(comm[1]), 0)
 			else:
 				summary_mode(int(comm[1]),int(comm[2]))
+		if comm[0] == 'day':
+			if len(comm) == 2:
+				day_mode(int(comm[1]))
+			else:
+				print "Usage: day <index>"
 		if comm[0] == 'import':
 			try:
 				import_mode(comm[1])
