@@ -5,6 +5,7 @@ import os.path
 import sqlite3
 import hashlib
 from math import sqrt
+from pylab import plot,show,bar
 
 def calc_game(game_array):
 	b = [' '] * 21
@@ -661,6 +662,37 @@ def calc_mode():
 			print "Last 50 games:  %4.1f\tLast 15 days: %4.1f" % (ave50, ave15)
 			print "Last 100 games: %4.1f\tLast 30 days: %4.1f" % (ave100, ave30)
 			print "All-time ave:   %4.1f\t(%i games, %i days)" % (allAve, num_games, num_days)
+		
+		if comm[0] == 'dist':
+			print "something"
+			dist_array = []
+
+			# connect to the database
+			conn = sqlite3.connect('bowling.db')
+			c = conn.cursor()
+			
+			last_s = 0
+			resolution = 5
+			for s in range(resolution,301,resolution):
+				c.execute('SELECT score10 FROM game_data WHERE score10 BETWEEN ? AND ?', (last_s, s))
+
+				counter = 0
+				for row in c:
+					counter += 1
+
+				dist_array.append(counter)
+
+				last_s = s
+
+			print dist_array
+
+			for i in range(len(dist_array)):
+				print i*resolution, dist_array[i]
+
+			#plot(range(0,300,resolution),dist_array)
+			bar(range(0,300,resolution),dist_array,width=resolution)
+			show()
+
 
 def main():
 	exit = False
