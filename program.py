@@ -574,11 +574,85 @@ def calc_mode():
 			comm = command.split()
 		if comm[0] == 'quit' or comm[0] == 'exit':
 			exit = True
-		if comm[0] == '190':
+		if comm[0] == 'ave':
+			# connect to database
 			conn = sqlite3.connect('bowling.db')
 			c = conn.cursor()
-			c.execute('select * from game_data where score10 > 190')
-			disp_selected(c)
+
+			# average last 10 games
+			c.execute('SELECT * FROM (SELECT id,score10 FROM game_data ORDER BY id DESC LIMIT 10) ORDER BY id ASC')
+			ave10 = 0
+			for row in c:
+				ave10 += row[1] / 10.0
+			print ave10
+
+			# average last 50 games
+			c.execute('SELECT * FROM (SELECT id,score10 FROM game_data ORDER BY id DESC LIMIT 50) ORDER BY id ASC')
+			ave50 = 0
+			for row in c:
+				ave50 += row[1] / 50.0
+			print ave50
+
+			# average last 100 games
+			c.execute('SELECT * FROM (SELECT id,score10 FROM game_data ORDER BY id DESC LIMIT 100) ORDER BY id ASC')
+			ave100 = 0
+			for row in c:
+				ave100 += row[1] / 100.0
+			print ave100
+
+			# average all games
+			c.execute('SELECT id,score10 FROM game_data')
+			sumAll = 0
+			counter = 0
+			for row in c:
+				sumAll += row[1]
+				counter += 1
+			aveAll = 1.0 * sumAll / counter
+			print aveAll
+
+			# average last 3 sessions
+			c.execute('SELECT * FROM (SELECT id,num_games,average FROM summary ORDER BY id DESC LIMIT 3) ORDER BY id ASC')
+			sum3 = 0
+			counter = 0
+			for row in c:
+				sum3 += row[2] * row[1]
+				counter += row[1]
+			ave3 = 1.0 * sum3 / counter
+			print ave3
+
+			# average last 15 sessions
+			c.execute('SELECT * FROM (SELECT id,num_games,average FROM summary ORDER BY id DESC LIMIT 15) ORDER BY id ASC')
+			sum15 = 0
+			counter = 0
+			for row in c:
+				sum15 += row[2] * row[1]
+				counter += row[1]
+			ave15 = 1.0 * sum15 / counter
+			print ave15
+
+			# average last 30 sessions
+			c.execute('SELECT * FROM (SELECT id,num_games,average FROM summary ORDER BY id DESC LIMIT 30) ORDER BY id ASC')
+			sum30 = 0
+			counter = 0
+			for row in c:
+				sum30 += row[2] * row[1]
+				counter += row[1]
+			ave30 = 1.0 * sum30 / counter
+			print ave30
+
+			# average over all sessions to doublecheck 1st all average calc
+			c.execute('SELECT id,num_games,average FROM summary')
+			allSum = 0
+			counter = 0
+			for row in c:
+				allSum += row[2] * row[1]
+				counter += row[1]
+			allAve = 1.0 * allSum / counter
+			print allAve
+
+			if aveAll != allAve:
+				print "Error with average calc"
+
 
 def main():
 	exit = False
