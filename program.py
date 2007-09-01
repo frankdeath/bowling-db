@@ -299,6 +299,12 @@ def list_mode(min_score, max_score):
 	c.execute('SELECT * FROM game_data WHERE score10 BETWEEN ? AND ?', (min_score,max_score))
 	disp_selected(c)
 
+def last_mode(num):
+	conn = sqlite3.connect('bowling.db')
+	c = conn.cursor()
+	c.execute('SELECT * FROM (SELECT * FROM game_data ORDER BY id DESC LIMIT ?) ORDER BY id ASC', (num,))
+	disp_selected(c)
+
 def summary_mode(days, offset):
 	conn = sqlite3.connect('bowling.db')
 	c = conn.cursor()
@@ -712,6 +718,12 @@ def main():
 			else:
 				#print 'selecting all games'
 				list_mode(0,300)
+		if comm[0] == 'last':
+			if len(comm) == 2:
+				last_mode(int(comm[1]))
+			else:
+				last_mode(10)
+
 		if comm[0] == 'summary':
 			if len(comm) == 1:
 				#print 'selecting all games'
