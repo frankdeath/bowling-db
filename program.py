@@ -571,6 +571,124 @@ def disp_selected(c):
 
 		print "%s  %s  %s" % (disp_str0, disp_str1, disp_str2)
 
+def ave_mode():
+		# connect to database
+		conn = sqlite3.connect('bowling.db')
+		c = conn.cursor()
+
+		# average last 10 games
+		c.execute('SELECT * FROM (SELECT id,score10 FROM game_data ORDER BY id DESC LIMIT 10) ORDER BY id ASC')
+		ave10 = 0
+		for row in c:
+			ave10 += row[1] / 10.0
+		#print ave10
+
+		# average last 50 games
+		c.execute('SELECT * FROM (SELECT id,score10 FROM game_data ORDER BY id DESC LIMIT 50) ORDER BY id ASC')
+		ave50 = 0
+		for row in c:
+			ave50 += row[1] / 50.0
+		#print ave50
+
+		# average last 100 games
+		c.execute('SELECT * FROM (SELECT id,score10 FROM game_data ORDER BY id DESC LIMIT 100) ORDER BY id ASC')
+		ave100 = 0
+		for row in c:
+			ave100 += row[1] / 100.0
+		#print ave100
+
+		# average all games
+		c.execute('SELECT id,score10 FROM game_data')
+		sumAll = 0
+		counter = 0
+		for row in c:
+			sumAll += row[1]
+			counter += 1
+		aveAll = 1.0 * sumAll / counter
+		#print aveAll
+		num_games = counter
+
+		# average last 3 sessions
+		c.execute('SELECT * FROM (SELECT id,num_games,average FROM summary ORDER BY id DESC LIMIT 3) ORDER BY id ASC')
+		sum3 = 0
+		counter = 0
+		for row in c:
+			sum3 += row[2] * row[1]
+			counter += row[1]
+		ave3 = 1.0 * sum3 / counter
+		#print ave3
+
+		# average last 15 sessions
+		c.execute('SELECT * FROM (SELECT id,num_games,average FROM summary ORDER BY id DESC LIMIT 15) ORDER BY id ASC')
+		sum15 = 0
+		counter = 0
+		for row in c:
+			sum15 += row[2] * row[1]
+			counter += row[1]
+		ave15 = 1.0 * sum15 / counter
+		#print ave15
+
+		# average last 30 sessions
+		c.execute('SELECT * FROM (SELECT id,num_games,average FROM summary ORDER BY id DESC LIMIT 30) ORDER BY id ASC')
+		sum30 = 0
+		counter = 0
+		for row in c:
+			sum30 += row[2] * row[1]
+			counter += row[1]
+		ave30 = 1.0 * sum30 / counter
+		#print ave30
+
+		# average over all sessions to doublecheck 1st all average calc
+		c.execute('SELECT id,num_games,average FROM summary')
+		allSum = 0
+		counter = 0
+		num_days = 0
+		for row in c:
+			allSum += row[2] * row[1]
+			counter += row[1]
+			num_days += 1
+		allAve = 1.0 * allSum / counter
+		#print allAve
+
+		if aveAll != allAve:
+			print "Error with average calc"
+
+		# print averages in a table
+		print "Last 10 games:  %4.1f\tLast 3 days:  %4.1f" % (ave10, ave3)
+		print "Last 50 games:  %4.1f\tLast 15 days: %4.1f" % (ave50, ave15)
+		print "Last 100 games: %4.1f\tLast 30 days: %4.1f" % (ave100, ave30)
+		print "All-time ave:   %4.1f\t(%i games, %i days)" % (allAve, num_games, num_days)
+
+def dist_mode():
+		print "something"
+		dist_array = []
+
+		# connect to the database
+		conn = sqlite3.connect('bowling.db')
+		c = conn.cursor()
+		
+		last_s = 0
+		resolution = 5
+		for s in range(resolution,301,resolution):
+			c.execute('SELECT score10 FROM game_data WHERE score10 BETWEEN ? AND ?', (last_s, s))
+
+			counter = 0
+			for row in c:
+				counter += 1
+
+			dist_array.append(counter)
+
+			last_s = s
+
+		print dist_array
+
+		for i in range(len(dist_array)):
+			print i*resolution, dist_array[i]
+
+		#plot(range(0,300,resolution),dist_array)
+		bar(range(0,300,resolution),dist_array,width=resolution)
+		show()
+
 def calc_mode():
 	exit = False
 	while exit == False:
@@ -582,123 +700,9 @@ def calc_mode():
 		if comm[0] == 'quit' or comm[0] == 'exit':
 			exit = True
 		if comm[0] == 'ave':
-			# connect to database
-			conn = sqlite3.connect('bowling.db')
-			c = conn.cursor()
-
-			# average last 10 games
-			c.execute('SELECT * FROM (SELECT id,score10 FROM game_data ORDER BY id DESC LIMIT 10) ORDER BY id ASC')
-			ave10 = 0
-			for row in c:
-				ave10 += row[1] / 10.0
-			#print ave10
-
-			# average last 50 games
-			c.execute('SELECT * FROM (SELECT id,score10 FROM game_data ORDER BY id DESC LIMIT 50) ORDER BY id ASC')
-			ave50 = 0
-			for row in c:
-				ave50 += row[1] / 50.0
-			#print ave50
-
-			# average last 100 games
-			c.execute('SELECT * FROM (SELECT id,score10 FROM game_data ORDER BY id DESC LIMIT 100) ORDER BY id ASC')
-			ave100 = 0
-			for row in c:
-				ave100 += row[1] / 100.0
-			#print ave100
-
-			# average all games
-			c.execute('SELECT id,score10 FROM game_data')
-			sumAll = 0
-			counter = 0
-			for row in c:
-				sumAll += row[1]
-				counter += 1
-			aveAll = 1.0 * sumAll / counter
-			#print aveAll
-			num_games = counter
-
-			# average last 3 sessions
-			c.execute('SELECT * FROM (SELECT id,num_games,average FROM summary ORDER BY id DESC LIMIT 3) ORDER BY id ASC')
-			sum3 = 0
-			counter = 0
-			for row in c:
-				sum3 += row[2] * row[1]
-				counter += row[1]
-			ave3 = 1.0 * sum3 / counter
-			#print ave3
-
-			# average last 15 sessions
-			c.execute('SELECT * FROM (SELECT id,num_games,average FROM summary ORDER BY id DESC LIMIT 15) ORDER BY id ASC')
-			sum15 = 0
-			counter = 0
-			for row in c:
-				sum15 += row[2] * row[1]
-				counter += row[1]
-			ave15 = 1.0 * sum15 / counter
-			#print ave15
-
-			# average last 30 sessions
-			c.execute('SELECT * FROM (SELECT id,num_games,average FROM summary ORDER BY id DESC LIMIT 30) ORDER BY id ASC')
-			sum30 = 0
-			counter = 0
-			for row in c:
-				sum30 += row[2] * row[1]
-				counter += row[1]
-			ave30 = 1.0 * sum30 / counter
-			#print ave30
-
-			# average over all sessions to doublecheck 1st all average calc
-			c.execute('SELECT id,num_games,average FROM summary')
-			allSum = 0
-			counter = 0
-			num_days = 0
-			for row in c:
-				allSum += row[2] * row[1]
-				counter += row[1]
-				num_days += 1
-			allAve = 1.0 * allSum / counter
-			#print allAve
-
-			if aveAll != allAve:
-				print "Error with average calc"
-
-			# print averages in a table
-			print "Last 10 games:  %4.1f\tLast 3 days:  %4.1f" % (ave10, ave3)
-			print "Last 50 games:  %4.1f\tLast 15 days: %4.1f" % (ave50, ave15)
-			print "Last 100 games: %4.1f\tLast 30 days: %4.1f" % (ave100, ave30)
-			print "All-time ave:   %4.1f\t(%i games, %i days)" % (allAve, num_games, num_days)
-		
+			ave_mode()
 		if comm[0] == 'dist':
-			print "something"
-			dist_array = []
-
-			# connect to the database
-			conn = sqlite3.connect('bowling.db')
-			c = conn.cursor()
-			
-			last_s = 0
-			resolution = 5
-			for s in range(resolution,301,resolution):
-				c.execute('SELECT score10 FROM game_data WHERE score10 BETWEEN ? AND ?', (last_s, s))
-
-				counter = 0
-				for row in c:
-					counter += 1
-
-				dist_array.append(counter)
-
-				last_s = s
-
-			print dist_array
-
-			for i in range(len(dist_array)):
-				print i*resolution, dist_array[i]
-
-			#plot(range(0,300,resolution),dist_array)
-			bar(range(0,300,resolution),dist_array,width=resolution)
-			show()
-
+			dist_mode()
 
 def main():
 	exit = False
@@ -723,7 +727,10 @@ def main():
 				last_mode(int(comm[1]))
 			else:
 				last_mode(10)
-
+		if comm[0] == 'ave':
+			ave_mode()
+		if comm[0] == 'dist':
+			dist_mode()
 		if comm[0] == 'summary':
 			if len(comm) == 1:
 				#print 'selecting all games'
