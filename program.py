@@ -293,10 +293,10 @@ def create_mode():
 
 	create_db()
 
-def list_mode(min_score):
+def list_mode(min_score, max_score):
 	conn = sqlite3.connect('bowling.db')
 	c = conn.cursor()
-	c.execute('select * from game_data where score10 >= ?', (min_score,))
+	c.execute('SELECT * FROM game_data WHERE score10 BETWEEN ? AND ?', (min_score,max_score))
 	disp_selected(c)
 
 def summary_mode(days, offset):
@@ -705,11 +705,13 @@ def main():
 		if comm[0] == 'quit' or comm[0] == 'exit':
 			exit = True
 		if comm[0] == 'list':
-			if len(comm) != 2:
-				#print 'selecting all games'
-				list_mode(0)
+			if len(comm) == 3:
+				list_mode(int(comm[1]),int(comm[2]))
+			elif len(comm) == 2:
+				list_mode(int(comm[1]),300)
 			else:
-				list_mode(int(comm[1]))
+				#print 'selecting all games'
+				list_mode(0,300)
 		if comm[0] == 'summary':
 			if len(comm) == 1:
 				#print 'selecting all games'
