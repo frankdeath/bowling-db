@@ -5,7 +5,14 @@ import os.path
 import sqlite3
 import hashlib
 from math import sqrt
-from pylab import plot,show,bar
+try:
+	okToGraph = True
+	from pylab import plot,show,bar
+except ImportError:
+	okToGraph = False
+	print
+	print "You will not see pretty graphs until you install matplotlib"
+	print
 
 def calc_game(game_array):
 	b = [' '] * 21
@@ -685,9 +692,10 @@ def dist_mode():
 		for i in range(len(dist_array)):
 			print i*resolution, dist_array[i]
 
-		#plot(range(0,300,resolution),dist_array)
-		bar(range(0,300,resolution),dist_array,width=resolution)
-		show()
+		if okToGraph:
+			#plot(range(0,300,resolution),dist_array)
+			bar(range(0,300,resolution),dist_array,width=resolution)
+			show()
 
 def calc_mode():
 	exit = False
