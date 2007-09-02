@@ -1,0 +1,63 @@
+Brendan,
+
+I'm not exactly sure what to implement next so I figured now is a good time to send it to you.  Take a look at it whenever you have time and feel like it.  There's absolutely no rush.
+
+First of all, these are the things that you'll need for it to run:
+
+	python2.5 (required to run the software)
+	http://www.python.org/download/
+
+	matplotlib (required for graphs; the dist function is pretty weak without this lib but it will still run)
+	http://matplotlib.sourceforge.net/
+
+	NumPy (needed for matplotlib to work)
+	http://numpy.scipy.org/
+
+	When I installed matplotlib on OS X it told me I needed the following two packages.  I didn't install them on windows and the software ran as expected.  You can probably ignore them.
+
+	python-dateutil
+	http://labix.org/python-dateutil
+
+	pytz
+	http://pytz.sourceforge.net/
+
+Once you've got the necessary stuff installed you're ready to roll.  I have attached zip file with my code in it, as well as my slightly-out-of-date data file.  On windows I always run the script from the command line but I'm pretty sure that you can simply double-click once python is installed.  After double clicking it you'll get a prompt "> ".  You can type "help" to see what some of the commands are.  I won't do much with the help until I have a better idea how the software will be used.  So here's what you can do with it:
+
+import all.txt
+	this converts the data file into bowling.db
+
+list
+	lists all games
+list 200
+	lists all games 200 or greater
+list 190 200
+	lists all games between 190 and 200 (inclusive)
+
+summary
+	summarizes the last 10 days and gives a 10-day average
+summary 23
+	summarizes the last 23 days and gives a 23-day average
+summary 10 1
+	summarizes the last 10 days offset by 1 day (After adding
+	a new day I forgot what the old average was so I wanted
+	a way of easily seeing it again)
+
+last
+	lists the last 10 games
+last 47
+	lists the last 47 games
+
+ave
+	calculates running and all-time averages
+
+dist
+	calculates the distribution of games with 5-pin resolution
+
+
+That's pretty much all it can do right now.  The code is ugly and needs to be cleaned.  I need to spawn a new thread to display the graph so that the prompt is returned.  There is a calc command which I intended to be used for more powerful calculations.  I have not determined what those calculations should be yet.
+
+So when you get a chance to try it, let me know what you think.  The bowling.db is an sqlite database.  sqlite databases are a little less strict than other relational databases.  If you can interface the data directly from root, send me some pretty graphs.
+
+Kevin
+
+
