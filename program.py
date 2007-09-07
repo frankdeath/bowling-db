@@ -697,6 +697,23 @@ def dist_mode():
 			bar(range(0,300,resolution),dist_array,width=resolution)
 			show()
 
+def plotave_mode():
+	ave_array = []
+
+	# connect to the database
+	conn = sqlite3.connect('bowling.db')
+	c = conn.cursor()
+
+	c.execute('SELECT average FROM summary')
+
+	for ave in c:
+		ave_array.append(ave)
+	
+	plot(ave_array)
+	show()
+			
+
+
 def calc_mode():
 	exit = False
 	while exit == False:
@@ -739,6 +756,8 @@ def main():
 			ave_mode()
 		if comm[0] == 'dist':
 			dist_mode()
+		if comm[0] == 'plotave':
+			plotave_mode()
 		if comm[0] == 'summary':
 			if len(comm) == 1:
 				#print 'selecting all games'
