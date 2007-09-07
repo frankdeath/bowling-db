@@ -5,9 +5,10 @@ import os.path
 import sqlite3
 import hashlib
 from math import sqrt
+#from threading import Thread
 try:
 	okToGraph = True
-	from pylab import plot,show,bar
+	from pylab import plot,show,bar,hist
 except ImportError:
 	okToGraph = False
 	print
@@ -697,6 +698,29 @@ def dist_mode():
 			bar(range(0,300,resolution),dist_array,width=resolution)
 			show()
 
+def hist_mode():
+	score_array = []
+
+
+	# connect to the database
+	conn = sqlite3.connect('bowling.db')
+	c = conn.cursor()
+
+	c.execute('SELECT score10 FROM game_data')
+
+	for s in c:
+		score_array.append(s[0])
+	
+	#print min(score_array)
+	#print max(score_array)
+
+	#a_bins = range(0,300,5)
+	#a_bins = range(90,250,5)
+	a_bins = range(100,240,5)
+
+	hist(score_array,bins=a_bins)
+	show()
+
 def plotave_mode():
 	ave_array = []
 
@@ -707,12 +731,10 @@ def plotave_mode():
 	c.execute('SELECT average FROM summary')
 
 	for ave in c:
-		ave_array.append(ave)
+		ave_array.append(ave[0])
 	
 	plot(ave_array)
 	show()
-			
-
 
 def calc_mode():
 	exit = False
@@ -756,8 +778,14 @@ def main():
 			ave_mode()
 		if comm[0] == 'dist':
 			dist_mode()
+			#th = Thread(None, dist_mode)
+			#th.run()
 		if comm[0] == 'plotave':
 			plotave_mode()
+			#th = Thread(None, plotave_mode)
+			#th.run()
+		if comm[0] == 'hist':
+			hist_mode()
 		if comm[0] == 'summary':
 			if len(comm) == 1:
 				#print 'selecting all games'
