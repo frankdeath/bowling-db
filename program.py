@@ -738,6 +738,58 @@ def plotave_mode():
 	plot(ave_array)
 	show()
 
+def framedist_mode(num):
+	conn = sqlite3.connect('bowling.db')
+	c = conn.cursor()
+	if num == 0:
+		c.execute('SELECT * FROM game_data')
+	else:
+		c.execute('SELECT * FROM (SELECT * FROM game_data ORDER BY id DESC LIMIT ?) ORDER BY id ASC', (num,))
+
+	counter = 0
+	str = [0] * 10
+	spa = [0] * 10
+	ope = [0] * 10
+	spl = [0] * 10
+	con = [0] * 10
+	for row in c:
+		ball_array = row[4:25]
+		#print ball_array
+		note_array = row[25:35]
+		#print note_array
+
+		# do 1st 9 frames
+		for i in range(9):
+			# check str
+			if ball_array[2*i] == 'X' or ball_array[2*i] == 'x':
+				str[i] += 1
+			elif ball_array[2*i+1] == '/':
+				spa[i] += 1
+			else:
+				ope[i] += 1
+			if note_array[i] == 'S' or note_array[i] == 's':
+				spl[i] += 1
+				if ball_array[2*i+1] == '/':
+					con[i] += 1
+		
+		counter += 1
+
+	print str
+	print [1.0 * x / counter for x in str]
+	print spa
+	print [1.0 * x / counter for x in spa]
+	print ope
+	print [1.0 * x / counter for x in ope]
+	print spl
+	print [1.0 * x / counter for x in spl]
+	print con
+	print [1.0 * x / counter for x in con]
+	plot(str)
+	plot(spa)
+	#plot(ope)
+	show()
+	
+
 def calc_mode():
 	exit = False
 	while exit == False:
@@ -786,6 +838,13 @@ def main():
 			plotave_mode()
 			#th = Thread(None, plotave_mode)
 			#th.run()
+		if comm[0] == 'framedist':
+			if len(comm) == 1:
+				# do all
+				framedist_mode(0)
+			else:
+				# do some
+				framedist_mode(int(comm[1]))
 		if comm[0] == 'hist':
 			hist_mode()
 		if comm[0] == 'summary':
