@@ -678,7 +678,9 @@ def dist_mode():
 		last_s = 0
 		resolution = 5
 		for s in range(resolution,301,resolution):
-			c.execute('SELECT score10 FROM game_data WHERE score10 BETWEEN ? AND ?', (last_s, s))
+			## the following line is bad because it double-counts values
+			#c.execute('SELECT score10 FROM game_data WHERE score10 BETWEEN ? AND ?', (last_s, s))
+			c.execute('SELECT score10 FROM game_data WHERE score10 BETWEEN ? AND ?', (last_s, s - 0.5))
 
 			counter = 0
 			for row in c:
