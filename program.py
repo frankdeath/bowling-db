@@ -8,7 +8,7 @@ from math import sqrt
 #from threading import Thread
 try:
 	okToGraph = True
-	from pylab import plot,show,bar,hist
+	from pylab import plot,show,bar,hist,legend
 except ImportError:
 	okToGraph = False
 	print
@@ -752,6 +752,10 @@ def framedist_mode(num):
 	ope = [0] * 10
 	spl = [0] * 10
 	con = [0] * 10
+	str_b_strike = 0
+	str_b_spare = 0
+	spa_b_strike = 0
+		
 	for row in c:
 		ball_array = row[4:25]
 		#print ball_array
@@ -771,22 +775,57 @@ def framedist_mode(num):
 				spl[i] += 1
 				if ball_array[2*i+1] == '/':
 					con[i] += 1
+
+		# do 10th frame separately ball_array[18,19,20]
+		if ball_array[18] == 'X' or ball_array[18] == 'x':
+			str[9] += 1
+			if ball_array[19] == 'X' or ball_array[19] == 'x':
+				str_b_strike += 1
+			elif ball_array[20] == '/':
+				str_b_spare += 1
+		elif ball_array[19] == '/':
+			spa[9] += 1
+			if ball_array[20] == 'X' or ball_array[20] == 'x':
+				spa_b_strike += 1
+		else:
+			ope[9] += 1
+		# note: there is some ambiguity due to the fact that the
+		# automated scorer doesn't distinguish between splits on
+		# the first ball or the last ball (assuming no strikes)
+		if note_array[9] == 'S' or note_array[9] == 's':
+			spl[9] += 1
+			if ball_array[19] == '/' or ball_array[20] == '/':
+				con[9] += 1
 		
 		counter += 1
 
-	print str
-	print [1.0 * x / counter for x in str]
-	print spa
-	print [1.0 * x / counter for x in spa]
-	print ope
-	print [1.0 * x / counter for x in ope]
-	print spl
-	print [1.0 * x / counter for x in spl]
-	print con
-	print [1.0 * x / counter for x in con]
-	plot(str)
-	plot(spa)
-	#plot(ope)
+	#print str
+	strike_percent = [1.0 * x / counter for x in str]
+	#print spa
+	spare_percent = [1.0 * x / counter for x in spa]
+	#print ope
+	open_percent = [1.0 * x / counter for x in ope]
+	#print spl
+	split_percent = [1.0 * x / counter for x in spl]
+	#print con
+	splitconv_percent = [1.0 * x / counter for x in con]
+
+	#print str, str_b_strike, str_b_spare
+	#print spa, spa_b_strike
+
+	print "10th frame strike %\tBonus strike %\tBonus spare %"
+	print "%.2f\t\t\t%.2f\t\t%.2f" % ((1.0 * str[9] / counter), (1.0 * str_b_strike / str[9]), (1.0 * str_b_spare / str[9]))
+
+	print "10th frame spare %\tBonus strike %"
+	print "%.2f\t\t\t%.2f" % ((1.0 * spa[9] / counter), (1.0 * spa_b_strike / spa[9]))
+
+	# Plot the percentages
+	plot(strike_percent,label="Strike %")
+	plot(spare_percent,label="Spare %")
+	plot(open_percent,label="Open %")
+	plot(split_percent,label="Split %")
+	plot(splitconv_percent,label="Conversion %")
+	#legend()
 	show()
 	
 
