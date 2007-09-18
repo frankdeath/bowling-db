@@ -8,7 +8,7 @@ from math import sqrt
 #from threading import Thread
 try:
 	okToGraph = True
-	from pylab import plot,show,bar,hist,legend
+	from pylab import plot,show,bar,hist,legend,figure,subplot,xlabel,ylabel
 except ImportError:
 	okToGraph = False
 	print
@@ -820,11 +820,22 @@ def framedist_mode(num):
 	print "%.2f\t\t\t%.2f" % ((1.0 * spa[9] / counter), (1.0 * spa_b_strike / spa[9]))
 
 	# Plot the percentages
-	plot(strike_percent,label="Strike %")
-	plot(spare_percent,label="Spare %")
-	plot(open_percent,label="Open %")
-	plot(split_percent,label="Split %")
-	plot(splitconv_percent,label="Conversion %")
+	xlabel('Frame')
+	ylabel('Percent')
+	x_axis = range(1,11)
+	#figure(1)
+	#subplot(2,1,1)
+	#plot(strike_percent,label="Strike %")
+	#plot(spare_percent,label="Spare %")
+	#plot(open_percent,label="Open %")
+	plot(x_axis, strike_percent,'gs-',label="Strike %")
+	plot(x_axis, spare_percent,'b^-',label="Spare %")
+	plot(x_axis, open_percent,'ro-',label="Open %")
+	#subplot(2,1,2)
+	#plot(split_percent,label="Split %")
+	#plot(splitconv_percent,label="Conversion %")
+	plot(x_axis, split_percent,'co-',label="Split %")
+	plot(x_axis, splitconv_percent,'m^-',label="Conversion %")
 	#legend()
 	show()
 	
