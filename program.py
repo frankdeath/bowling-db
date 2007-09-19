@@ -880,23 +880,6 @@ def main():
 				last_mode(10)
 		if comm[0] == 'ave':
 			ave_mode()
-		if comm[0] == 'dist':
-			dist_mode()
-			#th = Thread(None, dist_mode)
-			#th.run()
-		if comm[0] == 'plotave':
-			plotave_mode()
-			#th = Thread(None, plotave_mode)
-			#th.run()
-		if comm[0] == 'framedist':
-			if len(comm) == 1:
-				# do all
-				framedist_mode(0)
-			else:
-				# do some
-				framedist_mode(int(comm[1]))
-		if comm[0] == 'hist':
-			hist_mode()
 		if comm[0] == 'summary':
 			if len(comm) == 1:
 				#print 'selecting all games'
@@ -911,6 +894,23 @@ def main():
 				day_mode(int(comm[1]))
 			else:
 				print "Usage: day <index>"
+		if comm[0] == 'dist':
+			dist_mode()
+			#th = Thread(None, dist_mode)
+			#th.run()
+		if comm[0] == 'hist':
+			hist_mode()
+		if comm[0] == 'plotave':
+			plotave_mode()
+			#th = Thread(None, plotave_mode)
+			#th.run()
+		if comm[0] == 'framedist':
+			if len(comm) == 1:
+				# do all
+				framedist_mode(0)
+			else:
+				# do some
+				framedist_mode(int(comm[1]))
 		if comm[0] == 'import':
 			try:
 				import_mode(comm[1])
