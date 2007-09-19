@@ -839,6 +839,44 @@ def framedist_mode(num):
 	#legend()
 	show()
 	
+def plotrunave_mode(num):
+	# connect to the database
+	conn = sqlite3.connect('bowling.db')
+	c = conn.cursor()
+
+	c.execute('SELECT id,num_games,average FROM summary')
+
+	the_list = []
+
+	for row in c:
+		the_list.append(row)
+	
+	#print the_list
+
+	## for i in range(len(list)-num+1):
+	##	print list[i:i+num]
+
+	running_ave = []
+	index = []
+	# loop over groups of days of length num
+	for i in range(len(the_list)-num+1):
+		# each item in current_block is a tuple (id, #, ave)
+		current_block = the_list[i:i+num]
+
+		# append last id as the index
+		index.append(current_block[-1][0])
+
+		current_sum = 0
+		counter = 0
+		for id,numg,ave in current_block:
+			counter += numg
+			current_sum += 1.0 * numg * ave
+
+		running_ave.append(1.0 * current_sum / counter)
+
+	#print running_ave
+	plot(index, running_ave)
+	show()
 
 def calc_mode():
 	exit = False
@@ -911,6 +949,12 @@ def main():
 			else:
 				# do some
 				framedist_mode(int(comm[1]))
+		if comm[0] == 'plotrunave':
+			if len(comm) == 1:
+				# assume 10 days
+				plotrunave_mode(10)
+			else:
+				plotrunave_mode(int(comm[1]))
 		if comm[0] == 'import':
 			try:
 				import_mode(comm[1])
