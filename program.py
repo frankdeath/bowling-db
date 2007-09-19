@@ -895,11 +895,17 @@ def calc_mode():
 
 def main():
 	exit = False
+	history = []
 	while exit == False:
-		command = raw_input('> ')
+		prompt = '%i> ' % len(history) 
+		command = raw_input(prompt)
+		if command != "" and command[0] == '!':
+			command = history[int(command[1:])]
+			print command
 		if command == "":
 			comm = 'dummy'
 		else:
+			history.append(command)
 			comm = command.split()
 		if comm[0] == 'quit' or comm[0] == 'exit':
 			exit = True
@@ -970,6 +976,9 @@ def main():
 		if comm[0] == 'create':
 			#print 'entering create mode'
 			create_mode()
+		if comm[0] == 'history':
+			for i in range(len(history)):
+				print "  %3i\t%s" % (i, history[i])
 		if comm[0] == 'help':
 			print
 			print '=======\t\t==========='
