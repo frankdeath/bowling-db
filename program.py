@@ -307,11 +307,31 @@ def list_mode(min_score, max_score):
 	c.execute('SELECT * FROM game_data WHERE score10 BETWEEN ? AND ?', (min_score,max_score))
 	disp_selected(c)
 
+def listseries_mode(min_ser, max_ser):
+	conn = sqlite3.connect('bowling.db')
+	c = conn.cursor()
+	c.execute('SELECT * FROM summary WHERE high_series BETWEEN ? AND ?', (min_ser,max_ser))
+	disp_summary(c)
+
 def last_mode(num):
 	conn = sqlite3.connect('bowling.db')
 	c = conn.cursor()
 	c.execute('SELECT * FROM (SELECT * FROM game_data ORDER BY id DESC LIMIT ?) ORDER BY id ASC', (num,))
 	disp_selected(c)
+
+def disp_summary(c):
+	num_games = 0
+	total_score = 0
+
+	print "   i      date      #    Ave     dev   game  ser    X    /    O    S    S/%   FBA"
+	#		db_values = (None, date, num_games, ave, std_dev, high_game, high_series, strike_ave, spare_ave, open_ave, split_ave, splitconv_ave, fba)
+
+	for row in c:
+		print "%4i   %s  %2i   %.1f   %4.1f    %3i  %3i   %.1f  %.1f  %.1f  %.1f  %4.1f   %.1f" % row
+		num_games += row[2]
+		total_score += ( row[2] * row[3] )
+
+	print "  Average: %4.1f" % (1.0 * total_score / num_games)
 
 def summary_mode(days, offset):
 	conn = sqlite3.connect('bowling.db')
@@ -917,6 +937,14 @@ def main():
 			else:
 				#print 'selecting all games'
 				list_mode(0,300)
+		if comm[0] == 'listseries':
+			if len(comm) == 3:
+				listseries_mode(int(comm[1]),int(comm[2]))
+			elif len(comm) == 2:
+				listseries_mode(int(comm[1]),900)
+			else:
+				#print 'selecting all games'
+				listseries_mode(0,900)
 		if comm[0] == 'last':
 			if len(comm) == 2:
 				last_mode(int(comm[1]))
