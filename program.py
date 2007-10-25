@@ -1,5 +1,6 @@
 #! /usr/bin/env python2.5
 
+from __future__ import division
 import sys
 import os.path
 import sqlite3
@@ -833,11 +834,22 @@ def framedist_mode(num):
 	#print str, str_b_strike, str_b_spare
 	#print spa, spa_b_strike
 
+	# if there are no strikes, there can't be any bonus strikes, so to avoid divide-by-zero error, set denom to 1
+	if str[9] == 0:
+		str_denom = 1
+	else:
+		str_denom = str[9]
+	# do the same with spares (these cases only an issue with framedist <low_number>)
+	if spa[9] == 0:
+		spa_denom = 1
+	else:
+		spa_denom = spa[9]
+
 	print "10th frame strike %\tBonus strike %\tBonus spare %"
-	print "%.2f\t\t\t%.2f\t\t%.2f" % ((1.0 * str[9] / counter), (1.0 * str_b_strike / str[9]), (1.0 * str_b_spare / str[9]))
+	print "%.2f\t\t\t%.2f\t\t%.2f" % ((1.0 * str[9] / counter), (1.0 * str_b_strike / str_denom), (1.0 * str_b_spare / str_denom))
 
 	print "10th frame spare %\tBonus strike %"
-	print "%.2f\t\t\t%.2f" % ((1.0 * spa[9] / counter), (1.0 * spa_b_strike / spa[9]))
+	print "%.2f\t\t\t%.2f" % ((1.0 * spa[9] / counter), (1.0 * spa_b_strike / spa_denom))
 
 	# Plot the percentages
 	xlabel('Frame')
