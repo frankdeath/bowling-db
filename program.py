@@ -759,6 +759,81 @@ def plotave_mode():
 	plot(ave_array)
 	show()
 
+def gamenumdist_mode(num):
+	conn = sqlite3.connect('bowling.db')
+	c = conn.cursor()
+
+	# since I don't know the maximum number of games there will be in one day, I have to determine it
+	max_games = 0
+	c.execute('SELECT DISTINCT num_games FROM summary')
+	for i in c:
+		if i[0] > max_games:
+			max_games = i[0]
+	#print max_games
+
+	# nums [ [] ]
+	# nums[1] = [games, total_score, strikes, spares, opens, splits, splits_converted, fba_sum]
+	gamenum_totals = []
+	for i in range(max_games):
+		gamenum_totals.append([0,0,0,0,0,0,0,0])
+
+	if num == 0:
+		#c.execute('SELECT * FROM game_data')
+		c.execute('SELECT game_num,score10,strikes,spares,opens,splits,splitConv,firstBallAve FROM game_data')
+	else:
+		c.execute('SELECT * FROM (SELECT * FROM game_data ORDER BY id DESC LIMIT ?) ORDER BY id ASC', (num,))
+	
+	for g in c:
+		gamenum = g[0] - 1
+		# gamenum is -1 for games that I just practiced
+		if gamenum < 0:
+			continue
+		# increment number of games with this game number
+		gamenum_totals[gamenum][0] += 1
+		# add score to total_score
+		gamenum_totals[gamenum][1] += g[1]
+		# add strikes
+		gamenum_totals[gamenum][2] += g[2]
+		# add spares
+		gamenum_totals[gamenum][3] += g[3]
+		# add opens
+		gamenum_totals[gamenum][4] += g[4]
+		# add splits
+		gamenum_totals[gamenum][5] += g[5]
+		# add conversions
+		gamenum_totals[gamenum][6] += g[6]
+		# add fba
+		gamenum_totals[gamenum][7] += g[7]
+
+	## display game stats as rows
+	#for i in range(len(gamenum_totals)):
+	#	print i+1, gamenum_totals[i]
+	#print
+
+	# display game stats as columns
+	labels = {0:'Number  ',
+			  1:'Score   ',
+	          2:'Strikes ',
+			  3:'Spares  ',
+			  4:'Opens   ',
+			  5:'Splits  ',
+			  6:'Conv\'s  ',
+			  7:'FBA     '}
+	print 'Game    ' + "".join(["%4i   " % x for x in range(1,max_games+1)])
+	for i in range(0,8):
+		str = ""
+		for j in range(max_games):
+			if i == 0:
+				temp_str = "%4i   " % gamenum_totals[j][i]
+			elif i == 1:
+				temp_str = " %5.1f " % (gamenum_totals[j][i] / gamenum_totals[j][0])
+			else:
+				temp_str = "%5.1f  " % (gamenum_totals[j][i] / gamenum_totals[j][0])
+			if j == 0:
+				temp_str = labels[i] + temp_str
+			str += temp_str
+		print str
+
 def framedist_mode(num):
 	conn = sqlite3.connect('bowling.db')
 	c = conn.cursor()
@@ -995,6 +1070,9 @@ def main():
 			else:
 				# do some
 				framedist_mode(int(comm[1]))
+		if comm[0] == 'gamenumdist':
+			# do all
+			gamenumdist_mode(0)
 		if comm[0] == 'plotrunave':
 			if len(comm) == 1:
 				# assume 10 days
